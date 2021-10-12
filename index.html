@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>My test page</title>
+</head>
+
+<body>
+  <p>This is my page</p>
+  <script>
+    fetch("http://localhost:8000/test")
+      .then(response => {
+        console.debug(response);
+      }).catch(error => {
+        console.error(error);
+      });
+  </script>
+</body>
+
+</html>
