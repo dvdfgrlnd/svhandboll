@@ -17,7 +17,7 @@ html, body {
     height: 100%;
 }
 
-.container {
+.dropdown {
     display: flex;
     flex-direction: column;
 }
