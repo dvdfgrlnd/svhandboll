@@ -1,1 +1,1 @@
-web: ROCKET_PORT=$PORT ROCKET_ENV=prod ./api/target/release/svhandboll
+web: ROCKET_PORT=$PORT ROCKET_ENV=prod ./target/release/svhandboll
