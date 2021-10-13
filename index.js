@@ -35,7 +35,7 @@ function createDropdown(name, callback, search_callback) {
     searchfield.addEventListener("input", (e) => search_callback(e.target.value))
 
     let container = htmlToElement(`<div id="dropdown_container_${name}" class="dropdown"></div>`);
-    container.appendChild(htmlToElement(`<h3>${name}</h3>`));
+    container.appendChild(htmlToElement(`<h3 class="dropdownheader">${name}</h3>`));
     container.appendChild(searchfield);
     container.appendChild(select);
 
