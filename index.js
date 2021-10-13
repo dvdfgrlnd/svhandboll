@@ -1,16 +1,19 @@
+// let base_url = "https://svhandboll.herokuapp.com";
+let base_url = "http://localhost:8000";
+
 async function fetchseasons() {
-    let seasons_json = await (await fetch("http://localhost:8000/listseasons")
+    let seasons_json = await (await fetch(`${base_url}/listseasons`)
     ).json();
-    let counties_json = await (await fetch("http://localhost:8000/listcounties")
+    let counties_json = await (await fetch(`${base_url}/listcounties`)
     ).json();
 
     return { seasons: seasons_json, counties: counties_json };
 }
 
 async function fetchdata(season) {
-    let teams_json = await (await fetch(`http://localhost:8000/listteams?season=${season}&club=`)
+    let teams_json = await (await fetch(`${base_url}/listteams?season=${season}&club=`)
     ).json();
-    let divisions_json = await (await fetch(`http://localhost:8000/listdivisions?season=${season}`)
+    let divisions_json = await (await fetch(`${base_url}/listdivisions?season=${season}`)
     ).json();
 
     return { teams: teams_json, divisions: divisions_json };
@@ -23,12 +26,13 @@ function htmlToElement(html) {
     return template.content.firstChild;
 }
 
-function createDropdown(name, callback) {
+function createDropdown(name, callback, search_callback) {
     // Create select
     let select = htmlToElement(`<select id="dropdown_${name}"></select>`);
     select.addEventListener("change", callback);
     // Create search field
     let searchfield = htmlToElement(`<input type="text" id="searchfield_${name}" name="" size="10">`);
+    searchfield.addEventListener("input", (e) => search_callback(e.target.value))
 
     let container = htmlToElement(`<div id="dropdown_container_${name}" class="dropdown"></div>`);
     container.appendChild(htmlToElement(`<h3>${name}</h3>`));
@@ -111,11 +115,15 @@ let team_and_divsion_callback = (element) => {
 let con = document.querySelector("#container");
 let frame = document.querySelector("#frame");
 
-let seasonscontainer = createDropdown("Seasons", season_callback);
+let search = (name, values) => (s) => {
+    let filtered = s ? data[values].filter(f => f.value.toLowerCase().includes(s.toLowerCase())) : data[values];
+    setdropdownvalues(name, filtered);
+}
+let seasonscontainer = createDropdown("Seasons", season_callback, search("Seasons", "seasons"));
 // let countiescontainer = createDropdown("Counties", j2);
-let teamscontainer = createDropdown("Teams", team_and_divsion_callback);
+let teamscontainer = createDropdown("Teams", team_and_divsion_callback, search("Teams", "teams"));
 teamscontainer.style.opacity = 0.1;
-let divisionscontainer = createDropdown("Divisions", team_and_divsion_callback);
+let divisionscontainer = createDropdown("Divisions", team_and_divsion_callback, search("Divisions", "divisions"));
 divisionscontainer.style.opacity = 0.1;
 
 con.appendChild(seasonscontainer);
