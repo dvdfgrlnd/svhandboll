@@ -8,7 +8,7 @@ async function fetchseasons() {
 }
 
 async function fetchdata(season) {
-    let teams_json = await (await fetch(`http://localhost:8000/listteams?season=${season}`)
+    let teams_json = await (await fetch(`http://localhost:8000/listteams?season=${season}&club=`)
     ).json();
     let divisions_json = await (await fetch(`http://localhost:8000/listdivisions?season=${season}`)
     ).json();
@@ -30,7 +30,7 @@ function createDropdown(name, callback) {
     // Create search field
     let searchfield = htmlToElement(`<input type="text" id="searchfield_${name}" name="" size="10">`);
 
-    let container = htmlToElement(`<div class="dropdown"></div>`);
+    let container = htmlToElement(`<div id="dropdown_container_${name}" class="dropdown"></div>`);
     container.appendChild(htmlToElement(`<h3>${name}</h3>`));
     container.appendChild(searchfield);
     container.appendChild(select);
@@ -50,50 +50,81 @@ function setdropdownvalues(name, values) {
     });
 }
 
-let con = document.querySelector("#container");
-let frame = document.querySelector("#frame");
-
 let data = {};
 
-let get_season = () => {
-    let s = document.querySelector("#dropdown_Seasons");
-    let id = parseInt(s.value);
-    let matching_season = data.seasons.find(x => x.id === id);
+let get_selections = () => {
+    let season_id = document.querySelector("#dropdown_Seasons").value;
+    let matching_season = (data.seasons || []).find(x => String(x.id) === season_id);
 
-    return matching_season;
+    let county_id = document.querySelector("#dropdown_Counties".value);
+    let matching_counties = (data.counties || []).find(x => String(x.id) === county_id);
+
+    let team_id = document.querySelector("#dropdown_Teams").value;
+    let matching_team = (data.teams || []).find(x => String(x.id) === team_id);
+
+    let division_id = document.querySelector("#dropdown_Divisions").value;
+    let matching_division = (data.divisions || []).find(x => String(x.id) === division_id);
+
+    return { season: matching_season, county: matching_counties, team: matching_team, division: matching_division };
 }
 
-let season_callback = (element) => {
-    let id = parseInt(element.target.value);
-    let matching_season = data.seasons.find(x => x.id === id);
-    console.log(id, matching_season);
+let season_callback = () => {
+    let matching_season = get_selections().season;
+    console.log(matching_season, get_selections());
     fetchdata(matching_season.id).then(response => {
         let teams = response.teams.map(v => ({ id: v.TeamId, value: v.TeamName }));
         data["teams"] = teams;
         setdropdownvalues("Teams", teams);
 
-        console.log("matching season", get_season());
+        console.log("matching season", get_selections());
 
         let divisions = response.divisions.map(v => ({ id: v.DivisionId, value: v.DivisionName }));
         data["divisions"] = divisions;
         setdropdownvalues("Divisions", divisions);
     });
-};
-let j2 = (value) => { console.log(value, value.target.value); };
-let j3 = (element) => {
-    let id = element.target.value;
-    let matching_team = data.teams.find(x => x.id === id);
 
-    frame.src = `https://ta.svenskhandboll.se/SerieAndMatchResult/Review?seasonId=${get_season().id}&teamId=${matching_team.id}&showTeamDivisionTable=true`;
-    console.log(element,);
+    // Activate divsions and teams
+    teamscontainer.style.opacity = 1;
+    divisionscontainer.style.opacity = 1;
 };
 
-con.appendChild(createDropdown("Seasons", season_callback));
-con.appendChild(createDropdown("Counties", j2));
-con.appendChild(createDropdown("Teams", j3));
-con.appendChild(createDropdown("Divisions", j2));
+let team_and_divsion_callback = (element) => {
+    if (element.target.id === "dropdown_Teams") {
+        let division = document.querySelector("#dropdown_Divisions");
+        division.value = undefined;
+    } else if (element.target.id === "dropdown_Divisions") {
+        let team = document.querySelector("#dropdown_Teams");
+        team.value = undefined;
+    }
+    let selections = get_selections();
+    console.log("selections", selections);
+    // let id = element.target.value;
+    // let matching_team = data.teams.find(x => x.id === id);
 
-// con.appendChild(createDropdown("Counties", season_callback));
+    if (selections.season && (selections.team || selections.division)) {
+        let id_or_empty = (v) => v || { id: "" };
+        frame.src = `https://ta.svenskhandboll.se/SerieAndMatchResult/Review?seasonId=${selections.season.id}&teamId=${id_or_empty(selections.team).id}&divisionId=${id_or_empty(selections.division).id}&showTeamDivisionTable=true`;
+    }
+};
+
+
+let con = document.querySelector("#container");
+let frame = document.querySelector("#frame");
+
+let seasonscontainer = createDropdown("Seasons", season_callback);
+// let countiescontainer = createDropdown("Counties", j2);
+let teamscontainer = createDropdown("Teams", team_and_divsion_callback);
+teamscontainer.style.opacity = 0.1;
+let divisionscontainer = createDropdown("Divisions", team_and_divsion_callback);
+divisionscontainer.style.opacity = 0.1;
+
+con.appendChild(seasonscontainer);
+// con.appendChild(countiescontainer);
+con.appendChild(teamscontainer);
+con.appendChild(divisionscontainer);
+
+
+
 
 fetchseasons()
     .then(response => {
@@ -101,12 +132,16 @@ fetchseasons()
         let seasons = response.seasons.map(v => ({ id: v.SeasonId, value: v.SeasonName }));
         data["seasons"] = seasons;
         setdropdownvalues("Seasons", seasons);
+        let current_season = response.seasons.find(v => v.SeasonInProgress);
+        let element = document.querySelector("#dropdown_Seasons");
+        element.value = String(current_season.SeasonId);
+        element.dispatchEvent(new Event('change'));
+
 
         // Counties
-        let counties = response.counties.map(v => ({ id: v.CountyId, value: v.CountyName }));
-        data["counties"] = counties;
-        setdropdownvalues("Counties", counties);
-
+        // let counties = response.counties.map(v => ({ id: v.CountyId, value: v.CountyName }));
+        // data["counties"] = counties;
+        // setdropdownvalues("Counties", counties);
 
     })
     .catch(e => {

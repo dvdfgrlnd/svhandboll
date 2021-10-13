@@ -30,7 +30,6 @@ impl Fairing for Counter {
     }
 }
 
-
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
@@ -65,15 +64,15 @@ fn listcounties() -> Result<String, String> {
     make_request(url)
 }
 
-#[get("/listteams?<season>")]
-fn listteams(season: &str) -> Result<String, String> {
-    let url = format!("https://services.svenskhandboll.se/v1/api/Team/ListTeamsByClubAndSeasonWithFavorites?APIKey=28c7X8AK&clubId=&seasonId={}&favIds=0", season);
+#[get("/listteams?<season>&<club>")]
+fn listteams(season: Option<&str>, club: Option<&str>) -> Result<String, String> {
+    let url = format!("https://services.svenskhandboll.se/v1/api/Team/ListTeamsByClubAndSeasonWithFavorites?APIKey=28c7X8AK&clubId={}&seasonId={}&favIds=0", club.unwrap_or(""), season.unwrap_or(""));
     make_request(&url)
 }
 
 #[get("/listdivisions?<season>&<countyid>")]
-fn listdivisions(season: &str, countyid: Option<&str>) -> Result<String, String> {
-    let url = format!("https://services.svenskhandboll.se/v1/api/Division/ListDivisionsWithFavorites?APIKey=28c7X8AK&favIds=0&countyId={}&seasonId={}", countyid.unwrap_or(""), season);
+fn listdivisions(season: Option<&str>, countyid: Option<&str>) -> Result<String, String> {
+    let url = format!("https://services.svenskhandboll.se/v1/api/Division/ListDivisionsWithFavorites?APIKey=28c7X8AK&favIds=0&countyId={}&seasonId={}", countyid.unwrap_or(""), season.unwrap_or(""));
     make_request(&url)
 }
 
@@ -83,10 +82,18 @@ fn listseasons() -> Result<String, String> {
     make_request(url)
 }
 
+#[get("/listclubs?<season>")]
+fn listclubs(season: &str) -> Result<String, String> {
+    let url = format!("https://services.svenskhandboll.se/v1/api/Club/SearchClubsWithTeamsByNameAndSeason?APIKey=28c7X8AK&clubName=&seasonId={}", season);
+    make_request(&url)
+}
 
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![index, listcounties, listteams, listdivisions, listseasons])
+        .mount(
+            "/",
+            routes![index, listcounties, listteams, listdivisions, listseasons, listclubs],
+        )
         .attach(Counter)
 }
