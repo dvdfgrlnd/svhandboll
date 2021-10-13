@@ -24,6 +24,7 @@ html, body {
 .dropdown {
     display: flex;
     flex-direction: column;
+    flex-shrink: 1;
 }
 
 #container {
