@@ -27,30 +27,43 @@ function htmlToElement(html) {
 }
 
 function createDropdown(name, callback, search_callback) {
-    // Create select
-    let select = htmlToElement(`<select id="dropdown_${name}"></select>`);
-    select.addEventListener("change", callback);
-    // Create search field
-    let searchfield = htmlToElement(`<input type="text" id="searchfield_${name}" name="" size="10">`);
-    searchfield.addEventListener("input", (e) => search_callback(e.target.value))
+    let c = htmlToElement(`<div class="d2" id="dropdown_${name}"></div>`);
+    let i = htmlToElement(`<input type="text" id="searchfield_${name}" name="" size="10">`);
+    i.addEventListener("input", (e) => search_callback(e.target.value));
+    let b = htmlToElement(`<button type="button" id="expandbutton_${name}">→</button>`);
+    let d = htmlToElement(`<div class="d3"></div>`);
+    d.addEventListener("click", (e) => {
+        let element = e.target;
+        if (element.classList.contains("d4")) {
+            let id = element.attributes.myid.value;
+            c.value = id;
+            c.dispatchEvent(new Event("change"));
 
-    let container = htmlToElement(`<div id="dropdown_container_${name}" class="dropdown"></div>`);
-    container.appendChild(htmlToElement(`<h3 class="dropdownheader">${name}</h3>`));
-    container.appendChild(searchfield);
-    container.appendChild(select);
+            console.log("pressed", id);
+        }
+    });
 
-    return container;
+
+    d.hidden = true;
+
+    b.addEventListener("click", () => d.hidden = !d.hidden);
+
+    c.appendChild(i);
+    c.appendChild(b);
+    c.appendChild(d);
+
+    c.addEventListener("change", callback);
+
+    return c;
 }
 
 function setdropdownvalues(name, values) {
-    let select = document.querySelector(`#dropdown_${name}`);
-    // Clear values
-    select.innerHTML = "";
-    // Add values
+    let d = document.querySelector(`#dropdown_${name} > div.d3`);
+    d.innerHTML = "";
     let blank = { id: "___blank___", value: "" };
     [blank].concat(values).forEach((elem) => {
-        let opt = htmlToElement(`<option value="${elem.id}">${elem.value}</option>`);
-        select.appendChild(opt);
+        let p = htmlToElement(`<p class="d4" myid="${elem.id}">${elem.value}</p>`);
+        d.appendChild(p);
     });
 }
 
@@ -155,3 +168,5 @@ fetchseasons()
     .catch(e => {
         console.log('Error: ' + e.message);
     });
+
+
