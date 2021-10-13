@@ -1,5 +1,5 @@
-// let base_url = "https://svhandboll.herokuapp.com";
-let base_url = "http://localhost:8000";
+let base_url = "https://svhandboll.herokuapp.com";
+// let base_url = "http://localhost:8000";
 
 async function fetchseasons() {
     let seasons_json = await (await fetch(`${base_url}/listseasons`)
