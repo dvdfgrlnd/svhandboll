@@ -14,7 +14,7 @@ html, body {
 }
 
 .d2 {
-    max-height: 25vh;
+    max-height: 50vh;
     display: flex;
     flex-direction: column;
 }
