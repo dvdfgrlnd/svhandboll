@@ -34,7 +34,7 @@ function createDropdown(name, callback, search_callback) {
         let dp = document.querySelector(`#dropdown_${name} > div.d3`);
         dp.hidden = !dp.hidden;
     });
-    let b = htmlToElement(`<button type="button" id="clearbutton_${name}">X</button>`);
+    let b = htmlToElement(`<button type="button" class="clearbutton" id="clearbutton_${name}">X</button>`);
     let d = htmlToElement(`<div class="d3"></div>`);
     d.addEventListener("click", (e) => {
         let element = e.target;
@@ -59,8 +59,11 @@ function createDropdown(name, callback, search_callback) {
         i.dispatchEvent(new Event("input"));
     });
 
-    c.appendChild(i);
-    c.appendChild(b);
+    let d2 = htmlToElement(`<div class="d5"></div>`);
+    d2.appendChild(i);
+    d2.appendChild(b);
+
+    c.appendChild(d2);
     c.appendChild(d);
 
     c.addEventListener("change", callback);
