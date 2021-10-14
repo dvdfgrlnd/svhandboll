@@ -46,10 +46,8 @@ function createDropdown(name, callback, search_callback) {
             c.value = id;
             // Set input text to clicked item value
             i.value = element.innerText;
-            // 
+            // Send onclick event
             c.dispatchEvent(new Event("change"));
-
-            console.log("pressed", id);
         }
     });
 
@@ -81,6 +79,10 @@ function setdropdownvalues(name, values) {
     });
 }
 
+function get_input(name){
+    return document.querySelector(`#dropdown_${name} #searchfield_${name}`).value;
+}
+
 let data = {};
 
 let get_selections = () => {
@@ -105,13 +107,11 @@ let season_callback = () => {
     fetchdata(matching_season.id).then(response => {
         let teams = response.teams.map(v => ({ id: v.TeamId, value: v.TeamName }));
         data["teams"] = teams;
-        setdropdownvalues("Teams", teams);
-
-        console.log("matching season", get_selections());
+        search("Teams", "teams")(get_input("Teams"), true);
 
         let divisions = response.divisions.map(v => ({ id: v.DivisionId, value: v.DivisionName }));
         data["divisions"] = divisions;
-        setdropdownvalues("Divisions", divisions);
+        search("Divisions", "divisions")(get_input("Divisions"), true);
     });
 
     // Activate divsions and teams
@@ -128,9 +128,6 @@ let team_and_divsion_callback = (element) => {
         team.value = undefined;
     }
     let selections = get_selections();
-    console.log("selections", selections);
-    // let id = element.target.value;
-    // let matching_team = data.teams.find(x => x.id === id);
 
     if (selections.season && (selections.team || selections.division)) {
         let id_or_empty = (v) => v || { id: "" };
@@ -142,9 +139,16 @@ let team_and_divsion_callback = (element) => {
 let con = document.querySelector("#container");
 let frame = document.querySelector("#frame");
 
-let search = (name, values) => (s) => {
-    document.querySelector(`#dropdown_${name} > div.d3`).hidden = false;
-    let filtered = s ? data[values].filter(f => f.value.toLowerCase().includes(s.toLowerCase())) : data[values];
+let search = (name, values) => (search_term, hidden=false) => {
+    document.querySelector(`#dropdown_${name} > div.d3`).hidden = hidden;
+    var filtered = undefined;
+    if (search_term) {
+        let words = search_term.split(" ");
+
+        filtered = data[values].filter(f => words.every(word => f.value.toLowerCase().includes(word.toLowerCase())));
+    } else {
+        filtered = data[values]
+    }
     setdropdownvalues(name, filtered);
 }
 let seasonscontainer = createDropdown("Seasons", season_callback, search("Seasons", "seasons"));
@@ -169,9 +173,12 @@ fetchseasons()
         data["seasons"] = seasons;
         setdropdownvalues("Seasons", seasons);
         let current_season = response.seasons.find(v => v.SeasonInProgress);
-        let element = document.querySelector("#dropdown_Seasons");
-        element.value = String(current_season.SeasonId);
-        element.dispatchEvent(new Event('change'));
+
+        let season_element = Array.from(document.querySelectorAll("#dropdown_Seasons p.d4"));
+        let current_season_element = season_element.find((e) => e.attributes.myid.value === String(current_season.SeasonId));
+        if (current_season_element) {
+            current_season_element.click();
+        }
 
 
         // Counties
