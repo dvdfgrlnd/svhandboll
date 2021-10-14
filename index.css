@@ -13,6 +13,15 @@ html, body {
     margin: 0.2em;
 }
 
+.d2 {
+    max-height: 15vh;
+}
+
+.d3 {
+    overflow-y: auto;
+    height: 100%;
+}
+
 #maincontainer {
     display: flex;
     flex-direction: column;

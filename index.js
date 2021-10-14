@@ -28,15 +28,25 @@ function htmlToElement(html) {
 
 function createDropdown(name, callback, search_callback) {
     let c = htmlToElement(`<div class="d2" id="dropdown_${name}"></div>`);
-    let i = htmlToElement(`<input type="text" id="searchfield_${name}" name="" size="10">`);
+    let i = htmlToElement(`<input type="text" id="searchfield_${name}" placeholder="${name}" name="" size="10">`);
     i.addEventListener("input", (e) => search_callback(e.target.value));
-    let b = htmlToElement(`<button type="button" id="expandbutton_${name}">→</button>`);
+    i.addEventListener("click", () => {
+        let dp = document.querySelector(`#dropdown_${name} > div.d3`);
+        dp.hidden = !dp.hidden;
+    });
+    let b = htmlToElement(`<button type="button" id="clearbutton_${name}">X</button>`);
     let d = htmlToElement(`<div class="d3"></div>`);
     d.addEventListener("click", (e) => {
         let element = e.target;
         if (element.classList.contains("d4")) {
+            // Close dropdown on click
+            document.querySelector(`#dropdown_${name} > div.d3`).hidden = true;
+            // Send event
             let id = element.attributes.myid.value;
             c.value = id;
+            // Set input text to clicked item value
+            i.value = element.innerText;
+            // 
             c.dispatchEvent(new Event("change"));
 
             console.log("pressed", id);
@@ -46,7 +56,10 @@ function createDropdown(name, callback, search_callback) {
 
     d.hidden = true;
 
-    b.addEventListener("click", () => d.hidden = !d.hidden);
+    b.addEventListener("click", () => {
+        i.value = "";
+        i.dispatchEvent(new Event("input"));
+    });
 
     c.appendChild(i);
     c.appendChild(b);
@@ -58,6 +71,7 @@ function createDropdown(name, callback, search_callback) {
 }
 
 function setdropdownvalues(name, values) {
+    values.sort((a, b) => a.value.localeCompare(b.value));
     let d = document.querySelector(`#dropdown_${name} > div.d3`);
     d.innerHTML = "";
     let blank = { id: "___blank___", value: "" };
@@ -129,6 +143,7 @@ let con = document.querySelector("#container");
 let frame = document.querySelector("#frame");
 
 let search = (name, values) => (s) => {
+    document.querySelector(`#dropdown_${name} > div.d3`).hidden = false;
     let filtered = s ? data[values].filter(f => f.value.toLowerCase().includes(s.toLowerCase())) : data[values];
     setdropdownvalues(name, filtered);
 }
