@@ -75,8 +75,8 @@ function setdropdownvalues(name, values) {
     values.sort((a, b) => a.value.localeCompare(b.value));
     let d = document.querySelector(`#dropdown_${name} > div.d3`);
     d.innerHTML = "";
-    let blank = { id: "___blank___", value: "" };
-    [blank].concat(values).forEach((elem) => {
+    // let blank = { id: "___blank___", value: "" };
+    values.forEach((elem) => {
         let p = htmlToElement(`<p class="d4" myid="${elem.id}">${elem.value}</p>`);
         d.appendChild(p);
     });
